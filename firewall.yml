@@ -1,0 +1,23 @@
+- name: Установка программ
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Установка firewalld
+      dnf:
+        name:
+        - firewalld
+        state: latest
+        
+  tasks:
+    - name: Конфигурация firewalld
+      shell: |
+       firewall-cmd --add-service=vnc-server --permanent
+       firewall-cmd --permanent --new-service=zabbix
+       firewall-cmd --permanent --service=zabbix --add-port=10050/tcp
+       firewall-cmd --permanent --service=zabbix --set-short="Zabbix Agent"
+       firewall-cmd --permanent --add-service=zabbix
+       firewall-cmd --runtime-to-permanent
+       systemctl start firewalld
+       systemctl enable firewalld
+       firewall-cmd --reload

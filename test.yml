@@ -1,0 +1,47 @@
+- name: Установка программ
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Установка программ и конфигурация Zabbix
+      dnf:
+        name:
+        - htop
+        - zabbix-agent
+        - x11vnc
+        state: latest
+        
+  tasks:
+    - name: copy1
+      copy:
+        src: zabbix_agentd.conf
+        dest: /etc/zabbix/zabbix_agentd.conf
+        
+  tasks:
+    - name: copy2
+      copy:
+        src: vncpasswd
+        dest: /tmp/vncpasswd
+        
+  tasks:
+    - name: copy3
+      copy:
+        src: x11vnc.service
+        dest: /lib/systemd/system/x11vnc.service
+
+  tasks:
+    - name: enable службы zabbix
+      shell: |
+       systemctl enable zabbix-agent
+       systemctl start zabbix-agent
+
+  tasks:
+    - name: Перезапуск daemon
+      shell: |
+        systemctl daemon-reload
+
+  tasks:
+    - name: Перезапуск службы x11vnx
+      shell: |
+       systemctl enable x11vnc.service
+       systemctl start x11vnc.service

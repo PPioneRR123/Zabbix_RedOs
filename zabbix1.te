@@ -1,0 +1,60 @@
+module zabbix_policy 1.2;
+
+require {
+type httpd_t;
+type oddjob_mkhomedir_t;
+type var_lib_t; type system_dbusd_t;
+type setroubleshootd_t;
+type unconfined_service_t;
+type init_t; type initrc_t;
+type chkpwd_t; type unconfined_t;
+type zabbix_t; type chkpwd_exec_t;
+type initrc_var_run_t;
+type kernel_t;
+type shadow_t;
+type sssd_conf_t;
+type sudo_exec_t;
+type traceroute_exec_t;
+type user_tmp_t;
+class dir { add_name write search getattr };
+class file { open read map lock execute execute_no_trans getattr };
+class netlink_audit_socket { read write create nlmsg_relay };
+class capability { audit_write sys_admin net_admin net_raw };
+class rawip_socket { write create setopt };
+class netlink_rdma_socket { read write bind create getattr setopt };
+class packet_socket { read write bind create getopt ioctl map setopt };
+class system module_request;
+class process { noatsecure rlimitinh siginh };
+}
+
+#============= httpd_t ==============
+allow httpd_t self:capability net_admin;
+
+#============= oddjob_mkhomedir_t ==============
+allow oddjob_mkhomedir_t var_lib_t:dir { add_name write };
+
+#============= system_dbusd_t ==============
+allow system_dbusd_t self:capability net_admin;
+allow system_dbusd_t setroubleshootd_t:process { noatsecure rlimitinh siginh };
+allow system_dbusd_t unconfined_service_t:process { noatsecure rlimitinh siginh };
+
+#============= init_t ==============
+allow init_t initrc_t:process siginh;
+allow init_t chkpwd_t:process siginh;
+allow init_t unconfined_t:process siginh;
+
+#============= zabbix_t ==============
+allow zabbix_t chkpwd_exec_t:file { open read map execute_no_trans };
+allow zabbix_t initrc_var_run_t:file { open read lock };
+allow zabbix_t kernel_t:system module_request;
+allow zabbix_t self:capability { audit_write sys_admin net_admin net_raw };
+allow zabbix_t self:netlink_audit_socket { read write create nlmsg_relay };
+allow zabbix_t self:netlink_rdma_socket { read write bind create getattr setopt };
+allow zabbix_t self:packet_socket { read write bind create getopt ioctl map setopt };
+allow zabbix_t self:rawip_socket { write create setopt };
+allow zabbix_t shadow_t:file { open read getattr };
+allow zabbix_t sssd_conf_t:dir search;
+allow zabbix_t sssd_conf_t:file { open read getattr };
+allow zabbix_t sudo_exec_t:file { execute getattr };
+allow zabbix_t traceroute_exec_t:file { open read map execute execute_no_trans getattr };
+allow zabbix_t user_tmp_t:dir { getattr search };
